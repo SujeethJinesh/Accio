@@ -1,3 +1,5 @@
+var autonomy = require('ardrone-autonomy');
+var mission  = autonomy.createMission();
 var Kinect2 = require('kinect2'),
 	express = require('express'),
 	app = express(),
@@ -47,7 +49,8 @@ if(kinect.open()) {
 	            var t = ((rightFoot.y + leftFoot.y) / 2 - elbow.y) / pointLine.y;
 	            point = new Vector(elbow.x + t * pointLine.x, elbow.y + t * pointLine.y, elbow.z + t * pointLine.z);
 	            console.log('Floor Point X: ' + point.x + ' Y: ' + point.y + ' Z: ' + point.z);
-	            gotPoint = true;
+	            goToPoint(point);
+		    gotPoint = true;
 	        } else if (body.rightHandState == Kinect2.HandState.lasso && gotPoint) {
 	            gotPoint = false;
 	        }
@@ -55,4 +58,26 @@ if(kinect.open()) {
 	});
 
 	kinect.openBodyReader();
+}
+
+function goToPoint(coords) {
+	mission.zero();
+	mission.takeoff();
+	mission.altitude(1);
+	mission.go({x: coords.x, y: coords.z, z: 0});
+	// mission.hover(1000);
+	//comp vision logic
+	mission.go({x: 0, y: 0, z: 1});
+	mission.land();
+	
+	mission.run(function (err, result) {
+    	if (err) {
+        	console.trace("Oops, something bad happened: %s", err.message);
+        	mission.client().stop();
+        	mission.client().land();
+    	} else {
+        	console.log("Mission success!");
+        	process.exit(0);
+    	}
+	});
 }

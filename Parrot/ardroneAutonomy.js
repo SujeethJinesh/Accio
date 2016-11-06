@@ -1,23 +1,38 @@
 var autonomy = require('ardrone-autonomy');
 var mission  = autonomy.createMission();
 
-mission.takeoff()
-       .zero()       // Sets the current state as the reference
-       .altitude(1)  // Climb to altitude = 1 meter
-       .forward(2)   
-       .right(2)     
-       .backward(2) 
-       .left(2)
-       .hover(1000)  // Hover in place for 1 second
-       .land();
+goToPoint({x: 0.5, z: 0.5});
 
-mission.run(function (err, result) {
-    if (err) {
-        console.trace("Oops, something bad happened: %s", err.message);
-        mission.client().stop();
-        mission.client().land();
-    } else {
-        console.log("Mission success!");
-        process.exit(0);
-    }
-});
+function goToPoint(coords) {
+	mission.zero();
+	mission.takeoff();
+	mission.altitude(1);
+	mission.go({x: coords.x, y: coords.z, z: 0});
+	// mission.hover(1000);
+	//comp vision logic
+	mission.go({x: 0, y: 0, z: 1});
+	mission.land();
+
+	mission.run(function (err, result) {
+    	if (err) {
+        	console.trace("Oops, something bad happened: %s", err.message);
+        	mission.client().stop();
+        	mission.client().land();
+    	} else {
+        	console.log("Mission success!");
+        	process.exit(0);
+    	}
+	});
+
+}
+
+// mission.run(function (err, result) {
+//     	if (err) {
+//         	console.trace("Oops, something bad happened: %s", err.message);
+//         	mission.client().stop();
+//         	mission.client().land();
+//     	} else {
+//         	console.log("Mission success!");
+//         	process.exit(0);
+//     	}
+// 	});
