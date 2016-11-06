@@ -7,13 +7,26 @@ var Kinect2 = require('kinect2'),
 	io = require('socket.io').listen(server);
     cv = require('opencv');
 
+var faceCount = 0;
+
 var drone = require('ar-drone');
 var client = drone.createClient();
 var pngStream = client.getPngStream();
 pngStream.on('data', function(pngBuffer) {
     cv.readImage(pngBuffer, function(err, im) {
         im.detectObject('haarcascade_frontalface_alt.xml', {}, function(err, faces) {
-            console.log('Face found!');
+            for (var i = 0; i < faces.length; i++) {
+                var face = faces[i];
+                if (face.width >= 75 && face.height >= 75) {
+                    console.log('Face found!');
+                    faceCount++;
+                }
+                if (faceCount > 15) {
+                    //play audio file
+                    console.log('Face /definitely/ found!');
+                    faceCount = 0;
+                }
+            }
         })
     });
 });
@@ -64,9 +77,9 @@ if(kinect.open()) {
                 gotPoint = true;
 	            goToPoint(point);
 	        }
-         //    else if (body.rightHandState == Kinect2.HandState.lasso && gotPoint) {
-	        //     gotPoint = false;
-	        // }
+            else if (body.rightHandState == Kinect2.HandState.lasso && gotPoint) {
+	            gotPoint = false;
+	        }
 	    });
 	});
 
