@@ -49,11 +49,12 @@ if(kinect.open()) {
 	            var t = ((rightFoot.y + leftFoot.y) / 2 - elbow.y) / pointLine.y;
 	            point = new Vector(elbow.x + t * pointLine.x, elbow.y + t * pointLine.y, elbow.z + t * pointLine.z);
 	            console.log('Floor Point X: ' + point.x + ' Y: ' + point.y + ' Z: ' + point.z);
+                gotPoint = true;
 	            goToPoint(point);
-		    gotPoint = true;
-	        } else if (body.rightHandState == Kinect2.HandState.lasso && gotPoint) {
-	            gotPoint = false;
 	        }
+         //    else if (body.rightHandState == Kinect2.HandState.lasso && gotPoint) {
+	        //     gotPoint = false;
+	        // }
 	    });
 	});
 
@@ -63,13 +64,14 @@ if(kinect.open()) {
 function goToPoint(coords) {
 	mission.zero();
 	mission.takeoff();
-	mission.altitude(1);
-	mission.go({x: coords.x, y: coords.z, z: 0});
+	mission.altitude(1.5);
+    console.log(coords.x, coords.z);
+	mission.go({x: coords.z + 1, y: -coords.x, z: 0});
 	// mission.hover(1000);
 	//comp vision logic
 	mission.go({x: 0, y: 0, z: 1});
 	mission.land();
-	
+
 	mission.run(function (err, result) {
     	if (err) {
         	console.trace("Oops, something bad happened: %s", err.message);
