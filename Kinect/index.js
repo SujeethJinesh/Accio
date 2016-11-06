@@ -20,6 +20,7 @@ function vectorSubtract(u, v) {
 }
 
 var point;
+var gotPoint = false;
 
 if(kinect.open()) {
 	server.listen(8000);
@@ -33,7 +34,7 @@ if(kinect.open()) {
 	kinect.on('bodyFrame', function(bodyFrame){
 	    io.sockets.emit('bodyFrame', bodyFrame);
 	    bodyFrame.bodies.forEach(function(body) {
-	        if (body.rightHandState == Kinect2.HandState.open) {
+	        if (body.rightHandState == Kinect2.HandState.open && !gotPoint) {
 	            var elbowJoint = body.joints[Kinect2.JointType.elbowRight];
 	            var wristJoint = body.joints[Kinect2.JointType.wristRight];
 	            var elbow = new Vector(elbowJoint.cameraX, elbowJoint.cameraY, elbowJoint.cameraZ);
@@ -45,10 +46,10 @@ if(kinect.open()) {
 	            var pointLine = vectorSubtract(wrist, elbow);
 	            var t = ((rightFoot.y + leftFoot.y) / 2 - elbow.y) / pointLine.y;
 	            point = new Vector(elbow.x + t * pointLine.x, elbow.y + t * pointLine.y, elbow.z + t * pointLine.z);
-	            console.log('Elbow X: ' + elbow.x + ' Y: ' + elbow.y + ' Z: ' + elbow.z);
-	            console.log('Wrist X: ' + wrist.x + ' Y: ' + wrist.y + ' Z: ' + wrist.z);
-	            console.log('Point Line X: ' + pointLine.x + ' Y: ' + pointLine.y + ' Z: ' + pointLine.z);
 	            console.log('Floor Point X: ' + point.x + ' Y: ' + point.y + ' Z: ' + point.z);
+	            gotPoint = true;
+	        } else if (body.rightHandState == Kinect2.HandState.lasso && gotPoint) {
+	            gotPoint = false;
 	        }
 	    });
 	});
