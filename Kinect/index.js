@@ -5,6 +5,18 @@ var Kinect2 = require('kinect2'),
 	app = express(),
 	server = require('http').createServer(app),
 	io = require('socket.io').listen(server);
+    cv = require('opencv');
+
+var drone = require('ar-drone');
+var client = drone.createClient();
+var pngStream = client.getPngStream();
+pngStream.on('data', function(pngBuffer) {
+    cv.readImage(pngBuffer, function(err, im) {
+        im.detectObject('haarcascade_frontalface_alt.xml', {}, function(err, faces) {
+            console.log('Face found!');
+        })
+    });
+});
 
 var kinect = new Kinect2();
 
