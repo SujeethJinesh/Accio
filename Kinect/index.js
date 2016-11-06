@@ -9,28 +9,6 @@ var Kinect2 = require('kinect2'),
 
 var faceCount = 0;
 
-var drone = require('ar-drone');
-var client = drone.createClient();
-var pngStream = client.getPngStream();
-pngStream.on('data', function(pngBuffer) {
-    cv.readImage(pngBuffer, function(err, im) {
-        im.detectObject('haarcascade_frontalface_alt.xml', {}, function(err, faces) {
-            for (var i = 0; i < faces.length; i++) {
-                var face = faces[i];
-                if (face.width >= 75 && face.height >= 75) {
-                    console.log('Face found!');
-                    faceCount++;
-                }
-                if (faceCount > 15) {
-                    //play audio file
-                    console.log('Face /definitely/ found!');
-                    faceCount = 0;
-                }
-            }
-        })
-    });
-});
-
 var kinect = new Kinect2();
 
 function Vector(x, y, z) {
@@ -76,10 +54,10 @@ if(kinect.open()) {
 	            console.log('Floor Point X: ' + point.x + ' Y: ' + point.y + ' Z: ' + point.z);
                 gotPoint = true;
 	            goToPoint(point);
-	        }
+	        }/*
             else if (body.rightHandState == Kinect2.HandState.lasso && gotPoint) {
 	            gotPoint = false;
-	        }
+	        }*/
 	    });
 	});
 
@@ -91,7 +69,7 @@ function goToPoint(coords) {
 	mission.takeoff();
 	mission.altitude(1.5);
     console.log(coords.x, coords.z);
-	mission.go({x: coords.z + 1, y: -coords.x, z: 0});
+	mission.go({x: coords.z, y: -coords.x - 0.25, z: 0});
 	// mission.hover(1000);
 	//comp vision logic
 	mission.go({x: 0, y: 0, z: 1});
@@ -108,3 +86,30 @@ function goToPoint(coords) {
     	}
 	});
 }
+/*
+var player = require('play-sound')(opts = {player: "./res/mplayer.exe"})
+
+var client = autonomy.createClient();
+var pngStream = client.getPngStream();
+pngStream.on('data', function(pngBuffer) {
+    cv.readImage(pngBuffer, function(err, im) {
+        im.detectObject('haarcascade_frontalface_alt.xml', {}, function(err, faces) {
+            for (var i = 0; i < faces.length; i++) {
+                var face = faces[i];
+                if (face.width >= 75 && face.height >= 75) {
+                    faceCount++;
+                    console.log('Face detected.');
+                }
+                if (faceCount > 15) {
+                    // $ mplayer foo.mp3
+                    player.play('./res/tts.mp3', function(err){
+                        if (err) throw err
+                    });
+
+                    faceCount = 0;
+                }
+            }
+        })
+    });
+});
+*/
